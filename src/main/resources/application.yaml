@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: peterrose
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/peterose}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  main:
+    allow-bean-definition-overriding: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+server:
+  address: 0.0.0.0
+  port: 9039
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000  # 24 hours in milliseconds
+
+# Yoco Payment Configuration
+yoco:
+  secret:
+    key: ${YOCO_SECRET_KEY}
+
+# File storage configuration
+app:
+  upload:
+    dir: ${user.home}/peterrose-uploads/products
