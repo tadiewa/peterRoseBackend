@@ -12,8 +12,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 .allowedOrigins(
                     "http://localhost:3000", "http://localhost:3001",
-                        "http://172.20.10.2:3000",// Local React dev server
-                    "https://your-vercel-app.vercel.app"  // Production frontend
+                        "http://172.20.10.2:3000",
+                    "https://your-vercel-app.vercel.app"
                 )
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")

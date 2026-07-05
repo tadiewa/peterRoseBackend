@@ -84,21 +84,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // Allow multiple origins (PC and mobile)
-        configuration.setAllowedOriginPatterns(List.of("*"));
-
-        // Or specific origins
-        // configuration.setAllowedOrigins(Arrays.asList(
-        //     "http://localhost:3000",
-        //     "http://192.168.1.x:3000"  // Your PC's local IP
-        // ));
-
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:3000/",
+                "https://peterose.co.za",
+                "https://www.peterose.co.za"));
         configuration.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
         ));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setExposedHeaders(List.of("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 

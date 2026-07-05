@@ -51,27 +51,21 @@ public class PaymentServiceImpl implements PaymentService {
             String customerEmail,
             String successUrl,
             String cancelUrl) {
-
         log.info("Creating Yoco checkout for order: {} amount: R{}", orderId, amount);
-
         try {
             String yocoUrl = "https://payments.yoco.com/api/checkouts";
-
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("amount", convertToYocoCents(amount));
             requestBody.put("currency", currency);
             requestBody.put("successUrl", successUrl);
             requestBody.put("cancelUrl", cancelUrl);
             requestBody.put("failureUrl", cancelUrl);
-
             Map<String, String> metadata = new HashMap<>();
             metadata.put("orderId", orderId);
             requestBody.put("metadata", metadata);
-
             if (customerEmail != null && !customerEmail.isEmpty()) {
                 requestBody.put("customerEmail", customerEmail);
             }
-
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(yocoSecretKey);
@@ -91,9 +85,7 @@ public class PaymentServiceImpl implements PaymentService {
                 Map<String, Object> responseBody = response.getBody();
                 String checkoutId = (String) responseBody.get("id");
                 String redirectUrl = (String) responseBody.get("redirectUrl");
-
                 log.info(" Yoco checkout created: {} for order: {}", checkoutId, orderId);
-
                 Map<String, String> result = new HashMap<>();
                 result.put("checkoutId", checkoutId);
                 result.put("redirectUrl", redirectUrl);
@@ -117,33 +109,24 @@ public class PaymentServiceImpl implements PaymentService {
         // Use pessimistic lock to prevent concurrent access
         Optional<Payment> existingByOrder = paymentRepository.findByOrderId(orderId);
         if (existingByOrder.isPresent()) {
-            log.info("✅ Payment already exists for order: {}", orderId);
+            log.info(" Payment already exists for order: {}", orderId);
             return toResponseDTO(existingByOrder.get());
         }
-
         Optional<Payment> existingByYoco = paymentRepository.findByYocoPaymentId(yocoPaymentId);
         if (existingByYoco.isPresent()) {
-            log.info("✅ Payment with Yoco ID already exists");
+            log.info(" Payment with Yoco ID already exists");
             return toResponseDTO(existingByYoco.get());
         }
         Order order = findOrderOrThrow(orderId);
 
-        // If amount is 0 or null, use order total
         if (paidAmount == null || paidAmount == 0) {
             paidAmount = order.getTotal();
             log.info("Using order total as payment amount: R{}", paidAmount);
         }
-
-        // Validate amount matches order total
         validatePaymentAmount(order, paidAmount, orderId);
-
-        // Create and save payment record
         Payment payment = createPaymentRecord(yocoPaymentId, orderId, paidAmount);
         Payment savedPayment = paymentRepository.save(payment);
-
-        // Update order status to CONFIRMED
         confirmOrder(order);
-
         log.info(" Payment verified and saved: {} for order: {}", yocoPaymentId, orderId);
         return toResponseDTO(savedPayment);
     }
@@ -182,7 +165,6 @@ public class PaymentServiceImpl implements PaymentService {
         List<PaymentResponseDTO> paymentDTOs = payments.stream()
                 .map(this::toResponseDTO)
                 .toList();
-
         log.info("Found {} successful payment(s) totalling R{} for {}", payments.size(), totalAmount, today);
 
         return DailyPaymentSummaryDTO.builder()
@@ -230,13 +212,11 @@ public class PaymentServiceImpl implements PaymentService {
     private void confirmOrder(Order order) {
         if (order.getStatus() != OrderStatus.CONFIRMED) {
             order.setStatus(OrderStatus.CONFIRMED);
-
             TrackingUpdate trackingUpdate = new TrackingUpdate();
             trackingUpdate.setStatus("Order Confirmed");
             trackingUpdate.setTimestamp(LocalDateTime.now());
             trackingUpdate.setDescription("Payment confirmed. Our florists are preparing your arrangement.");
             order.getTrackingUpdates().add(trackingUpdate);
-
             orderRepository.save(order);
             log.info(" Order confirmed: {}", order.getId());
         }
